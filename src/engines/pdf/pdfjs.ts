@@ -83,9 +83,14 @@ function singularValueDecompose2dScale(m: number[]): { x: number; y: number } {
   return { x: Math.sqrt(sx), y: Math.sqrt(sy) };
 }
 
+// Pre-compiled regex patterns for string decoding (avoid recompilation per item)
+const BUGGY_FONT_MARKER_REGEX = /:->|>_(\d+)_\d+_<|<-:/g;
+const BUGGY_FONT_MARKER_CHECK = ':->|>';
+const PIPE_PATTERN_REGEX = /\s*\|([^|])\|\s*/g;
+
 export class PdfJsEngine implements PdfEngine {
   name = 'pdfjs';
-  private pdfiumRenderer: PdfiumRenderer = new PdfiumRenderer();
+  private pdfiumRenderer: PdfiumRenderer | null = null;
   private currentPdfPath: string | null = null;
 
   async loadDocument(filePath: string): Promise<PdfDocument> {
@@ -121,95 +126,94 @@ export class PdfJsEngine implements PdfEngine {
 
     // Extract text content
     const textContent = await page.getTextContent();
-    const textItems: TextItem[] = textContent.items
-      .filter((item: any) => item.height !== 0 && item.width !== 0)
-      .map((item: any) => {
-        // Apply viewport transformation to convert PDF coordinates to screen coordinates
-        // This properly handles Y-axis flip (PDF is bottom-up, screen is top-down)
-        const cm = multiplyMatrices(viewport.transform, item.transform);
+    const viewportWidth = viewport.width;
+    const viewportHeight = viewport.height;
+    const viewportTransform = viewport.transform;
 
-        // Get lower-left corner (text space origin)
-        const ll = applyTransformation({ x: 0, y: 0 }, cm);
+    const textItems: TextItem[] = [];
+    for (const item of textContent.items as any[]) {
+      // Skip items with zero dimensions
+      if (item.height === 0 || item.width === 0) continue;
 
-        // Get scale factors to properly size the bounding box
-        const scale = singularValueDecompose2dScale(item.transform);
+      // Apply viewport transformation to convert PDF coordinates to screen coordinates
+      // This properly handles Y-axis flip (PDF is bottom-up, screen is top-down)
+      const cm = multiplyMatrices(viewportTransform, item.transform);
 
-        // Get upper-right corner
-        const ur = applyTransformation(
-          { x: item.width / scale.x, y: item.height / scale.y },
-          cm
-        );
+      // Get lower-left corner (text space origin)
+      const ll = applyTransformation({ x: 0, y: 0 }, cm);
 
-        // Calculate final bounding box in viewport space
-        const left = Math.min(ll.x, ur.x);
-        const right = Math.max(ll.x, ur.x);
-        const top = Math.min(ll.y, ur.y);
-        const bottom = Math.max(ll.y, ur.y);
+      // Get scale factors to properly size the bounding box
+      const scale = singularValueDecompose2dScale(item.transform);
 
-        const width = right - left;
-        const height = bottom - top;
+      // Get upper-right corner
+      const ur = applyTransformation(
+        { x: item.width / scale.x, y: item.height / scale.y },
+        cm
+      );
 
-        // Calculate rotation from combined transformation matrix
-        let rotation = getRotation(cm);
-        // Normalize to 0-360 range
-        if (rotation < 0) {
-          rotation += 360;
-        }
+      // Calculate final bounding box in viewport space
+      const left = Math.min(ll.x, ur.x);
+      const right = Math.max(ll.x, ur.x);
+      const top = Math.min(ll.y, ur.y);
+      const bottom = Math.max(ll.y, ur.y);
 
-        // Decode buggy font markers from PDF.js
-        // Format: :->|>_<charCode>_<fontChar>_<|<-:
-        let decodedStr = item.str.replace(
-          /:->|>_(\d+)_\d+_<|<-:/g,
+      // Skip items that are off-page (negative coordinates or beyond page bounds)
+      if (top < 0 || left < 0 || top > viewportHeight || left > viewportWidth) continue;
+
+      const width = right - left;
+      const height = bottom - top;
+
+      // Calculate rotation from combined transformation matrix
+      let rotation = getRotation(cm);
+      // Normalize to 0-360 range
+      if (rotation < 0) {
+        rotation += 360;
+      }
+
+      // Decode buggy font markers from PDF.js (only if marker is present)
+      // Format: :->|>_<charCode>_<fontChar>_<|<-:
+      let decodedStr = item.str;
+      if (decodedStr.includes(BUGGY_FONT_MARKER_CHECK)) {
+        BUGGY_FONT_MARKER_REGEX.lastIndex = 0; // Reset regex state
+        decodedStr = decodedStr.replace(
+          BUGGY_FONT_MARKER_REGEX,
           (_: string, charCode: string) => String.fromCharCode(parseInt(charCode))
         );
+      }
 
-        // Handle pipe-separated characters: " |a|  |r|  |X| " -> "arX"
-        // Some PDFs encode text with characters separated by pipes and spaces
-        if (decodedStr.includes('|')) {
-          const pipePattern = /\s*\|([^|])\|\s*/g;
-          const matches = [...decodedStr.matchAll(pipePattern)];
-          if (matches.length > 0) {
-            decodedStr = matches.map(m => m[1]).join('');
-          }
+      // Handle pipe-separated characters: " |a|  |r|  |X| " -> "arX"
+      // Some PDFs encode text with characters separated by pipes and spaces
+      if (decodedStr.includes('|')) {
+        PIPE_PATTERN_REGEX.lastIndex = 0; // Reset regex state
+        const matches = [...decodedStr.matchAll(PIPE_PATTERN_REGEX)];
+        if (matches.length > 0) {
+          decodedStr = matches.map(m => m[1]).join('');
         }
+      }
 
-        return {
-          str: decodedStr,
-          x: left,
-          y: top,
-          width,
-          height,
-          w: width,
-          h: height,
-          r: rotation,
-          fontName: item.fontName,
-          fontSize: Math.sqrt(
-            item.transform[0] * item.transform[0] + item.transform[1] * item.transform[1]
-          ),
-        };
-      })
-      .filter((item: TextItem) => {
-        // Filter out items that are off-page (negative coordinates or beyond page bounds)
-        return (
-          item.y >= 0 &&
-          item.x >= 0 &&
-          item.y <= viewport.height &&
-          item.x <= viewport.width
-        );
+      textItems.push({
+        str: decodedStr,
+        x: left,
+        y: top,
+        width,
+        height,
+        w: width,
+        h: height,
+        r: rotation,
+        fontName: item.fontName,
+        fontSize: Math.sqrt(
+          item.transform[0] * item.transform[0] + item.transform[1] * item.transform[1]
+        ),
       });
-
-    // Extract annotations (links, etc.)
-    const rawAnnotations = await page.getAnnotations();
-    const annotations: Annotation[] = rawAnnotations.map((ann: any) => ({
-      type: ann.annotationType,
-      subtype: ann.subtype,
-      url: ann.url,
-      rect: ann.rect,
-    }));
+    }
 
     // For now, paths and images are empty - we'll add extraction logic later
     const paths: Path[] = [];
     const images: Image[] = [];
+
+    // Skip annotation extraction - not currently used in processing pipeline
+    // Can be re-enabled if needed for link extraction, etc.
+    const annotations: Annotation[] = [];
 
     await page.cleanup();
 
@@ -265,6 +269,10 @@ export class PdfJsEngine implements PdfEngine {
       throw new Error('PDF path not available for rendering');
     }
 
+    if (!this.pdfiumRenderer) {
+      this.pdfiumRenderer = new PdfiumRenderer();
+    }
+
     return await this.pdfiumRenderer.renderPageToBuffer(
       this.currentPdfPath,
       pageNum,
@@ -278,8 +286,11 @@ export class PdfJsEngine implements PdfEngine {
       await pdfDocument.destroy();
     }
 
-    // Clean up PDFium renderer
-    await this.pdfiumRenderer.close();
+    // Clean up PDFium renderer (only if it was initialized)
+    if (this.pdfiumRenderer) {
+      await this.pdfiumRenderer.close();
+      this.pdfiumRenderer = null;
+    }
     this.currentPdfPath = null;
   }
 

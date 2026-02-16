@@ -13,6 +13,10 @@ export interface ConversionError {
   code: string;
 }
 
+export interface ConversionPassthrough {
+  content: string
+}
+
 // File extension categories
 export const officeExtensions = [
   '.doc',
@@ -242,7 +246,7 @@ async function convertImageToPdf(
  */
 export async function convertToPdf(
   filePath: string
-): Promise<ConversionResult | ConversionError> {
+): Promise<ConversionResult | ConversionPassthrough | ConversionError> {
   try {
     // Check if file exists
     try {
@@ -280,15 +284,13 @@ export async function convertToPdf(
     } else if (imageExtensions.includes(extension)) {
       console.error(`Converting image: ${path.basename(filePath)}`);
       pdfPath = await convertImageToPdf(filePath, tmpDir);
-    } else if (htmlExtensions.includes(extension)) {
+    } 
+    else {
+      // Unsupported format
+      // Assume its a text-based format and pass through text directly
+      const content = await fs.readFile(filePath, 'utf-8');
       return {
-        message: `HTML conversion not yet supported. Please convert to PDF manually.`,
-        code: 'UNSUPPORTED_FORMAT',
-      };
-    } else {
-      return {
-        message: `Unsupported file format: ${extension}`,
-        code: 'UNSUPPORTED_FORMAT',
+        content,
       };
     }
 

@@ -58,6 +58,15 @@ export class LiteParse {
       throw new Error(`Conversion failed: ${conversionResult.message}`);
     }
 
+    // Return early for text-based passthrough formats
+    if ('content' in conversionResult) {
+      log(`File is a text-based format. Returning content directly.`);
+      return {
+        pages: [],
+        text: conversionResult.content,
+      };
+    }
+
     pdfPath = conversionResult.pdfPath;
     needsCleanup = pdfPath !== filePath;
 

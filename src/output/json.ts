@@ -21,7 +21,6 @@ export function buildJSON(pages: ParsedPage[]): any {
       })),
       boundingBoxes: page.boundingBoxes || [],
       tables: page.tables || [],
-      images: page.images || [],
     })),
   };
 }

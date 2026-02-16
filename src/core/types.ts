@@ -1,3 +1,5 @@
+import { DetectedTable } from '../processing/tables.js';
+
 export type OutputFormat = 'json' | 'text';
 
 export interface LiteParseConfig {
@@ -110,8 +112,7 @@ export interface ParsedPage {
   text: string;
   textItems: TextItem[];
   boundingBoxes?: BoundingBox[];
-  tables?: any[];
-  images?: any[];
+  tables?: DetectedTable[];
 }
 
 export interface ParseResult {
