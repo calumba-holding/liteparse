@@ -82,6 +82,7 @@ export function cleanRawText(pages: ParsedPage[], _config: LiteParseConfig): voi
 
   // Remove null characters
   for (const page of pages) {
+    // eslint-disable-next-line no-control-regex
     page.text = page.text.replace(/\u0000/g, " ");
   }
 }

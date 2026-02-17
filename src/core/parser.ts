@@ -43,10 +43,6 @@ export class LiteParse {
       if (!quiet) console.error(msg); // Progress goes to stderr
     };
 
-    // Convert to PDF if needed
-    let pdfPath = filePath;
-    let needsCleanup = false;
-
     log(`Processing file: ${filePath}`);
     const conversionResult = await convertToPdf(filePath);
 
@@ -64,8 +60,9 @@ export class LiteParse {
       };
     }
 
-    pdfPath = conversionResult.pdfPath;
-    needsCleanup = pdfPath !== filePath;
+    // Convert to PDF if needed
+    const pdfPath = conversionResult.pdfPath;
+    const needsCleanup = pdfPath !== filePath;
 
     if (needsCleanup) {
       log(`Converted ${conversionResult.originalExtension} to PDF`);

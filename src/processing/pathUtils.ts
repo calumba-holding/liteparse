@@ -9,8 +9,8 @@ export interface Line {
   height: number;
 }
 
-export interface VerticalLine extends Line {}
-export interface HorizontalLine extends Line {}
+export type VerticalLine = Line;
+export type HorizontalLine = Line;
 
 /**
  * Extract vertical and horizontal lines from PDF paths

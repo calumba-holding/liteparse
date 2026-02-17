@@ -1047,15 +1047,14 @@ export function projectToGrid(
   // calculate median textBox width/height
   const pageMedianSizes = getMedianTextBoxSize(projectionBoxes);
   let medianWidth = pageMedianSizes.width;
-  let medianHeight = pageMedianSizes.height;
+  const medianHeight = pageMedianSizes.height;
 
-  let { verticalLines, horizontalLines } = getVerticalAndHorizontalLinesFromPagePaths(
-    config,
-    page.paths
-  );
+  const { verticalLines: rawVerticalLines, horizontalLines: _horizontalLines } =
+    getVerticalAndHorizontalLinesFromPagePaths(config, page.paths);
   // filter vertical and horizontal lines are less than 80% of page.width / height
-  verticalLines = verticalLines.filter((line) => line.height > page.height * 0.8);
-  horizontalLines = horizontalLines.filter((line) => line.width > page.width * 0.8);
+  const verticalLines = rawVerticalLines.filter((line) => line.height > page.height * 0.8);
+  // horizontalLines filtered but not currently used - reserved for future detection
+  void _horizontalLines.filter((line) => line.width > page.width * 0.8);
 
   // Save original bboxes (including OCR) for text attribution
   const attributionBboxes: ProjectionTextBox[] = [];
@@ -1175,7 +1174,8 @@ export function projectToGrid(
 
       const sizes = getMedianTextBoxSize(lines.slice(block.start, block.end).flat());
       medianWidth = sizes.width;
-      medianHeight = sizes.height;
+      // medianHeight updated but not currently used per-block - reserved for future use
+      void sizes.height;
     }
 
     // compute snaps

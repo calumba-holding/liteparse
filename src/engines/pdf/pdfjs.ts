@@ -230,7 +230,7 @@ export class PdfJsEngine implements PdfEngine {
     const pages: PageData[] = [];
 
     // Parse target pages if specified
-    let pageNumbers: number[] = [];
+    let pageNumbers: number[];
     if (targetPages) {
       pageNumbers = this.parseTargetPages(targetPages, numPages);
     } else {
