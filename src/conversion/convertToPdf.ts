@@ -1,4 +1,4 @@
-import { promises as fs } from "fs";
+import { promises as fs, constants as fsConstants } from "fs";
 import { spawn } from "child_process";
 import path from "path";
 import os from "os";
@@ -159,18 +159,76 @@ async function isCommandAvailable(command: string): Promise<boolean> {
 }
 
 /**
+ * Check if a file path exists and is executable
+ */
+async function isPathExecutable(filePath: string): Promise<boolean> {
+  try {
+    await fs.access(filePath, fsConstants.X_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Find LibreOffice command - handles different installation methods
+ */
+async function findLibreOfficeCommand(): Promise<string | null> {
+  // Check for 'libreoffice' in PATH (Linux, some macOS setups)
+  if (await isCommandAvailable("libreoffice")) {
+    return "libreoffice";
+  }
+
+  // Check for 'soffice' in PATH
+  if (await isCommandAvailable("soffice")) {
+    return "soffice";
+  }
+
+  // macOS: Check standard application paths
+  const macOSPaths = [
+    "/Applications/LibreOffice.app/Contents/MacOS/soffice",
+    "/Applications/LibreOffice.app/Contents/MacOS/libreoffice",
+  ];
+
+  for (const libPath of macOSPaths) {
+    if (await isPathExecutable(libPath)) {
+      return libPath;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Find ImageMagick command - handles v6 (convert) and v7 (magick)
+ */
+async function findImageMagickCommand(): Promise<{ command: string; args: string[] } | null> {
+  // ImageMagick v7 uses 'magick' command
+  if (await isCommandAvailable("magick")) {
+    return { command: "magick", args: [] };
+  }
+
+  // ImageMagick v6 uses 'convert' command
+  if (await isCommandAvailable("convert")) {
+    return { command: "convert", args: [] };
+  }
+
+  return null;
+}
+
+/**
  * Convert office documents using LibreOffice
  */
 async function convertOfficeDocument(filePath: string, outputDir: string): Promise<string> {
-  const hasLibreOffice = await isCommandAvailable("libreoffice");
-  if (!hasLibreOffice) {
+  const libreOfficeCmd = await findLibreOfficeCommand();
+  if (!libreOfficeCmd) {
     throw new Error(
       "LibreOffice is not installed. Please install LibreOffice to convert office documents. On macOS: brew install --cask libreoffice, On Ubuntu: apt-get install libreoffice"
     );
   }
 
   await executeCommand(
-    "libreoffice",
+    libreOfficeCmd,
     ["--headless", "--invisible", "--convert-to", "pdf", "--outdir", outputDir, filePath],
     120000 // 2 minutes timeout
   );
@@ -188,25 +246,60 @@ async function convertOfficeDocument(filePath: string, outputDir: string): Promi
   }
 }
 
+// Extensions that require Ghostscript for ImageMagick conversion
+const ghostscriptRequiredExtensions = [".svg", ".eps", ".ps", ".ai"];
+
 /**
  * Convert images to PDF using ImageMagick
  */
 async function convertImageToPdf(filePath: string, outputDir: string): Promise<string> {
-  const hasConvert = await isCommandAvailable("convert");
-  if (!hasConvert) {
+  const imageMagick = await findImageMagickCommand();
+  if (!imageMagick) {
     throw new Error(
       "ImageMagick is not installed. Please install ImageMagick to convert images. On macOS: brew install imagemagick, On Ubuntu: apt-get install imagemagick"
     );
   }
 
+  const ext = path.extname(filePath).toLowerCase();
+  const needsGhostscript = ghostscriptRequiredExtensions.includes(ext);
+
+  // Check for Ghostscript if needed for this file type
+  if (needsGhostscript) {
+    const hasGhostscript = await isCommandAvailable("gs");
+    if (!hasGhostscript) {
+      throw new Error(
+        `Ghostscript is required to convert ${ext.toUpperCase().slice(1)} files but is not installed. ` +
+          "On macOS: brew install ghostscript, On Ubuntu: apt-get install ghostscript"
+      );
+    }
+  }
+
   const baseName = path.basename(filePath, path.extname(filePath));
   const pdfPath = path.join(outputDir, `${baseName}.pdf`);
 
-  await executeCommand(
-    "convert",
-    [filePath, "-density", "150", "-units", "PixelsPerInch", pdfPath],
-    60000
-  );
+  try {
+    await executeCommand(
+      imageMagick.command,
+      [...imageMagick.args, filePath, "-density", "150", "-units", "PixelsPerInch", pdfPath],
+      60000
+    );
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    // Provide better error messages for common issues
+    if (errorMsg.includes("gs") && errorMsg.includes("command not found")) {
+      throw new Error(
+        `Ghostscript is required to convert ${ext.toUpperCase().slice(1)} files but is not installed. ` +
+          "On macOS: brew install ghostscript, On Ubuntu: apt-get install ghostscript"
+      );
+    }
+    if (errorMsg.includes("FailedToExecuteCommand") && errorMsg.includes("gs")) {
+      throw new Error(
+        `Ghostscript failed during ${ext.toUpperCase().slice(1)} conversion. ` +
+          "Ensure Ghostscript is properly installed: brew install ghostscript"
+      );
+    }
+    throw error;
+  }
 
   return pdfPath;
 }
