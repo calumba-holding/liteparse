@@ -173,7 +173,7 @@ async function isPathExecutable(filePath: string): Promise<boolean> {
 /**
  * Find LibreOffice command - handles different installation methods
  */
-async function findLibreOfficeCommand(): Promise<string | null> {
+export async function findLibreOfficeCommand(): Promise<string | null> {
   // Check for 'libreoffice' in PATH (Linux, some macOS setups)
   if (await isCommandAvailable("libreoffice")) {
     return "libreoffice";
@@ -202,7 +202,10 @@ async function findLibreOfficeCommand(): Promise<string | null> {
 /**
  * Find ImageMagick command - handles v6 (convert) and v7 (magick)
  */
-async function findImageMagickCommand(): Promise<{ command: string; args: string[] } | null> {
+export async function findImageMagickCommand(): Promise<{
+  command: string;
+  args: string[];
+} | null> {
   // ImageMagick v7 uses 'magick' command
   if (await isCommandAvailable("magick")) {
     return { command: "magick", args: [] };
@@ -219,7 +222,7 @@ async function findImageMagickCommand(): Promise<{ command: string; args: string
 /**
  * Convert office documents using LibreOffice
  */
-async function convertOfficeDocument(filePath: string, outputDir: string): Promise<string> {
+export async function convertOfficeDocument(filePath: string, outputDir: string): Promise<string> {
   const libreOfficeCmd = await findLibreOfficeCommand();
   if (!libreOfficeCmd) {
     throw new Error(
@@ -252,7 +255,7 @@ const ghostscriptRequiredExtensions = [".svg", ".eps", ".ps", ".ai"];
 /**
  * Convert images to PDF using ImageMagick
  */
-async function convertImageToPdf(filePath: string, outputDir: string): Promise<string> {
+export async function convertImageToPdf(filePath: string, outputDir: string): Promise<string> {
   const imageMagick = await findImageMagickCommand();
   if (!imageMagick) {
     throw new Error(
