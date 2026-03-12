@@ -5,7 +5,7 @@
  *   HF_TOKEN=xxx npx tsx scripts/upload-dataset.ts [dataset-dir] [repo-name]
  *
  * Arguments:
- *   dataset-dir - Directory containing the dataset with documents/ subfolder
+ *   dataset-dir - Directory containing the dataset with data/ subfolder
  *                 (default: ./dataset)
  *   repo-name   - HuggingFace repository name (default: llamaindex/liteparse_cicd_data)
  *
@@ -13,7 +13,7 @@
  *   HF_TOKEN - HuggingFace API token with write access
  *
  * This script:
- * 1. Regenerates metadata.jsonl by re-running liteparse on documents/ in the dataset
+ * 1. Regenerates metadata.jsonl by re-running liteparse on data/ in the dataset
  * 2. Uploads to HuggingFace using the huggingface_hub API
  */
 
@@ -46,7 +46,7 @@ async function main() {
   // Step 1: Regenerate dataset from documents in the dataset directory
   console.log("Step 1: Regenerating dataset from existing documents...");
   try {
-    // Pass both output dir and source docs dir (documents/ within the dataset)
+    // Pass both output dir and source docs dir (data/ within the dataset)
     execSync(`npx tsx scripts/create-dataset.ts "${datasetDir}" "${documentsDir}"`, {
       cwd: path.join(import.meta.dirname, ".."),
       stdio: "inherit",

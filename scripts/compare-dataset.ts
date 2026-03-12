@@ -5,7 +5,7 @@
  *   npx tsx scripts/compare-dataset.ts [dataset-dir]
  *
  * The dataset should be created using create-dataset.ts and contains:
- *   - documents/: The original document files
+ *   - data/: The original document files
  *   - metadata.jsonl: Expected outputs for each document/page
  *
  * Exit codes:

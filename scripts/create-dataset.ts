@@ -3,11 +3,11 @@
  *
  * Output structure:
  *   dataset/
- *     documents/
+ *     data/
  *       doc1.pdf
  *       doc2.docx
  *       ...
- *     metadata.jsonl  (each line: {"file_name": "documents/doc1.pdf", "document": "doc1.pdf", "page": 1, "output_json": {...}})
+ *     metadata.jsonl  (each line: {"file_name": "data/doc1.pdf", "document": "doc1.pdf", "page": 1, "output_json": {...}})
  *
  * Usage:
  *   npx tsx scripts/create-dataset.ts [output-dir] [source-docs-dir]
@@ -73,7 +73,7 @@ async function processFile(filePath: string, baseDocDir: string): Promise<Datase
     // For non-PDF files that return text directly (no pages)
     if (result.pages.length === 0 && result.text) {
       rows.push({
-        file_name: `documents/${relativePath}`,
+        file_name: `data/${relativePath}`,
         document: relativePath,
         page: 1,
         output_text: result.text,
@@ -87,7 +87,7 @@ async function processFile(filePath: string, baseDocDir: string): Promise<Datase
     for (const page of result.pages) {
       const jsonPage = result.json?.pages.find((p) => p.page === page.pageNum);
       rows.push({
-        file_name: `documents/${relativePath}`,
+        file_name: `data/${relativePath}`,
         document: relativePath,
         page: page.pageNum,
         output_text: page.text,
@@ -100,7 +100,7 @@ async function processFile(filePath: string, baseDocDir: string): Promise<Datase
     console.error(`  ERROR: ${error instanceof Error ? error.message : error}`);
     // Record the error as a dataset entry (blank result)
     rows.push({
-      file_name: `documents/${relativePath}`,
+      file_name: `data/${relativePath}`,
       document: relativePath,
       page: 0,
       output_text: "",
