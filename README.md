@@ -96,13 +96,13 @@ Screenshots are essential for LLM agents to extract visual information that text
 lit screenshot document.pdf -o ./screenshots
 
 # Screenshot specific pages
-lit screenshot document.pdf --pages "1,3,5" -o ./screenshots
+lit screenshot document.pdf --target-pages "1,3,5" -o ./screenshots
 
 # Custom DPI
 lit screenshot document.pdf --dpi 300 -o ./screenshots
 
 # Screenshot page range
-lit screenshot document.pdf --pages "1-10" -o ./screenshots
+lit screenshot document.pdf --target-pages "1-10" -o ./screenshots
 ```
 
 ### Library Usage
@@ -144,7 +144,6 @@ Options:
   --target-pages <pages>  Target pages (e.g., "1-5,10,15-20")
   --dpi <dpi>             DPI for rendering (default: "150")
   --no-precise-bbox       Disable precise bounding boxes
-  --skip-diagonal-text    Skip diagonal text
   --preserve-small-text   Preserve very small text
   --config <file>         Config file (JSON)
   -q, --quiet             Suppress progress output
@@ -185,7 +184,7 @@ Generate screenshots of PDF pages
 
 Options:
   -o, --output-dir <dir>  Output directory for screenshots (default: "./screenshots")
-  --pages <pages>         Page numbers to screenshot (e.g., "1,3,5" or "1-5")
+  --target-pages <pages>  Page numbers to screenshot (e.g., "1,3,5" or "1-5")
   --dpi <dpi>             DPI for rendering (default: "150")
   --format <format>       Image format: png|jpg (default: "png")
   --config <file>         Config file (JSON)
@@ -283,10 +282,7 @@ Create a `liteparse.config.json` file:
   "maxPages": 1000,
   "dpi": 150,
   "outputFormat": "json",
-  "includeImages": true,
-  "includeCharts": true,
   "preciseBoundingBox": true,
-  "skipDiagonalText": false,
   "preserveVerySmallText": false
 }
 ```

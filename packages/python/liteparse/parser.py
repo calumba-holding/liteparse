@@ -389,7 +389,7 @@ class LiteParse:
         file_path: Union[str, Path],
         output_dir: Optional[Union[str, Path]] = None,
         *,
-        pages: Optional[str] = None,
+        target_pages: Optional[str] = None,
         dpi: int = 150,
         image_format: Union[ImageFormat, str] = ImageFormat.PNG,
         load_bytes: bool = False,
@@ -401,7 +401,7 @@ class LiteParse:
         Args:
             file_path: Path to the document file
             output_dir: Directory to save screenshots (uses temp dir if not provided)
-            pages: Specific pages to screenshot (e.g., "1,3,5" or "1-5")
+            target_pages: Specific pages to screenshot (e.g., "1,3,5" or "1-5")
             dpi: DPI for rendering
             image_format: Image format ("png" or "jpg")
             load_bytes: If True, load image bytes into ScreenshotResult objects
@@ -439,8 +439,8 @@ class LiteParse:
             "-q",
         ]
 
-        if pages:
-            cmd.extend(["--pages", pages])
+        if target_pages:
+            cmd.extend(["--target-pages", target_pages])
 
         try:
             result = subprocess.run(

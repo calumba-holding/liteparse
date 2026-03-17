@@ -25,7 +25,6 @@ interface ParseCommandOptions {
   targetPages?: string;
   dpi?: string;
   preciseBbox?: boolean;
-  skipDiagonalText?: boolean;
   preserveSmallText?: boolean;
   config?: string;
   quiet?: boolean;
@@ -33,7 +32,7 @@ interface ParseCommandOptions {
 
 interface ScreenshotCommandOptions {
   outputDir?: string;
-  pages?: string;
+  targetPages?: string;
   dpi?: string;
   format?: string;
   config?: string;
@@ -78,7 +77,6 @@ program
   .option("--target-pages <pages>", 'Target pages (e.g., "1-5,10,15-20")')
   .option("--dpi <dpi>", "DPI for rendering", DEFAULT_DPI.toString())
   .option("--no-precise-bbox", "Disable precise bounding boxes")
-  .option("--skip-diagonal-text", "Skip diagonal text")
   .option("--preserve-small-text", "Preserve very small text")
   .option("--config <file>", "Config file (JSON)")
   .option("-q, --quiet", "Suppress progress output")
@@ -121,7 +119,6 @@ program
         targetPages: options.targetPages,
         dpi: parseInt(options.dpi || DEFAULT_DPI.toString()),
         preciseBoundingBox: options.preciseBbox !== false,
-        skipDiagonalText: options.skipDiagonalText || false,
         preserveVerySmallText: options.preserveSmallText || false,
       };
 
@@ -168,7 +165,7 @@ program
   .command("screenshot <file>")
   .description("Generate screenshots of PDF pages")
   .option("-o, --output-dir <dir>", "Output directory for screenshots", DEFAULT_SCREENSHOT_DIR)
-  .option("--pages <pages>", 'Page numbers to screenshot (e.g., "1,3,5" or "1-5")')
+  .option("--target-pages <pages>", 'Page numbers to screenshot (e.g., "1,3,5" or "1-5")')
   .option("--dpi <dpi>", "DPI for rendering", DEFAULT_DPI.toString())
   .option("--format <format>", "Image format: png|jpg", DEFAULT_SCREENSHOT_FORMAT)
   .option("--config <file>", "Config file (JSON)")
@@ -203,8 +200,8 @@ program
 
       // Parse target pages
       let pageNumbers: number[] | undefined;
-      if (options.pages) {
-        pageNumbers = parsePageNumbers(options.pages);
+      if (options.targetPages) {
+        pageNumbers = parsePageNumbers(options.targetPages);
       }
 
       const outputDir = options.outputDir || DEFAULT_SCREENSHOT_DIR;

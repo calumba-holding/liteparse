@@ -13,11 +13,47 @@ import { formatJSON } from "../output/json.js";
 import { convertToPdf, cleanupConversionFiles } from "../conversion/convertToPdf.js";
 import { cleanOcrTableArtifacts } from "../processing/textUtils.js";
 
+/**
+ * Main document parser class. Handles PDF parsing, OCR, format conversion,
+ * and screenshot generation.
+ *
+ * @example Basic text extraction
+ * ```typescript
+ * import { LiteParse } from "@llamaindex/liteparse";
+ *
+ * const parser = new LiteParse();
+ * const result = await parser.parse("document.pdf");
+ * console.log(result.text);
+ * ```
+ *
+ * @example JSON output with bounding boxes
+ * ```typescript
+ * const parser = new LiteParse({ outputFormat: "json", dpi: 300 });
+ * const result = await parser.parse("document.pdf");
+ * for (const page of result.json.pages) {
+ *   console.log(`Page ${page.page}: ${page.boundingBoxes.length} bounding boxes`);
+ * }
+ * ```
+ *
+ * @example Using an HTTP OCR server
+ * ```typescript
+ * const parser = new LiteParse({
+ *   ocrServerUrl: "http://localhost:8828/ocr",
+ *   ocrLanguage: "en",
+ * });
+ * const result = await parser.parse("scanned-document.pdf");
+ * ```
+ */
 export class LiteParse {
   private config: LiteParseConfig;
   private pdfEngine: PdfEngine;
   private ocrEngine?: OcrEngine;
 
+  /**
+   * Create a new LiteParse instance.
+   *
+   * @param userConfig - Partial configuration to override defaults. See {@link LiteParseConfig} for all options.
+   */
   constructor(userConfig: Partial<LiteParseConfig> = {}) {
     // Merge user config with defaults
     this.config = mergeConfig(userConfig);
@@ -37,7 +73,16 @@ export class LiteParse {
   }
 
   /**
-   * Parse a PDF file and return structured result
+   * Parse a document and return the extracted text, page data, and optionally structured JSON.
+   *
+   * Supports PDFs natively. Non-PDF formats (DOCX, XLSX, images, etc.) are automatically
+   * converted to PDF before parsing if the required system tools are installed.
+   *
+   * @param filePath - Path to the document file.
+   * @param quiet - If `true`, suppresses progress logging to stderr.
+   * @returns Parsed document data including text, per-page info, and optional JSON.
+   *
+   * @throws Error if the file cannot be found, converted, or parsed.
    */
   async parse(filePath: string, quiet = false): Promise<ParseResult> {
     const log = (msg: string) => {
@@ -130,7 +175,15 @@ export class LiteParse {
   }
 
   /**
-   * Generate screenshots of PDF pages
+   * Generate screenshots of PDF pages as image buffers.
+   *
+   * Uses PDFium for high-quality rendering. Each page is returned as a
+   * {@link ScreenshotResult} with the raw image buffer and dimensions.
+   *
+   * @param filePath - Path to the PDF file.
+   * @param pageNumbers - 1-indexed page numbers to screenshot. If omitted, all pages are rendered.
+   * @param quiet - If `true`, suppresses progress logging to stderr.
+   * @returns Array of screenshot results, one per rendered page.
    */
   async screenshot(
     filePath: string,
@@ -340,7 +393,9 @@ export class LiteParse {
   }
 
   /**
-   * Get current configuration
+   * Get a copy of the current configuration, including defaults merged with user overrides.
+   *
+   * @returns A shallow copy of the active {@link LiteParseConfig}.
    */
   getConfig(): LiteParseConfig {
     return { ...this.config };

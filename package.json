@@ -34,6 +34,7 @@
     "lint:fix": "eslint src cli --fix",
     "format": "prettier --write \"src/**/*.ts\" \"cli/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"cli/**/*.ts\"",
+    "docs:api": "bash scripts/generate-api-docs.sh",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "npm run build && changeset publish"
@@ -58,6 +59,8 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "prettier": "^3.8.1",
+    "typedoc": "^0.28.17",
+    "typedoc-plugin-markdown": "^4.10.0",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.56.0",
     "vitest": "^4.0.18"

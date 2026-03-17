@@ -15,12 +15,9 @@ export const DEFAULT_CONFIG: LiteParseConfig = {
 
   // Output
   outputFormat: "json",
-  includeImages: true,
-  includeCharts: true,
 
   // Features
   preciseBoundingBox: true,
-  skipDiagonalText: false,
   preserveVerySmallText: false,
   preserveLayoutAlignmentAcrossPages: false,
 };

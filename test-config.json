@@ -1,6 +1,0 @@
-{
-  "skipDiagonalText": true,
-  "ocrEnabled": false,
-  "outputFormat": "text",
-  "preserveLayoutAlignmentAcrossPages": false
-}

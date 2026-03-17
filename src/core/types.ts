@@ -1,55 +1,162 @@
+/**
+ * Supported output formats for parsed documents.
+ *
+ * - `"json"` — Structured JSON with per-page text items, bounding boxes, and metadata.
+ * - `"text"` — Plain text with spatial layout preserved.
+ */
 export type OutputFormat = "json" | "text";
 
+/**
+ * Configuration options for the {@link LiteParse} parser.
+ *
+ * All fields have sensible defaults. Pass a `Partial<LiteParseConfig>` to the
+ * constructor to override only the options you need.
+ *
+ * @example
+ * ```typescript
+ * const parser = new LiteParse({
+ *   ocrEnabled: true,
+ *   ocrLanguage: "fra",
+ *   dpi: 300,
+ *   outputFormat: "json",
+ * });
+ * ```
+ */
 export interface LiteParseConfig {
-  // OCR
+  /**
+   * OCR language code(s). Uses ISO 639-3 codes for Tesseract (e.g., `"eng"`, `"fra"`)
+   * or ISO 639-1 for HTTP OCR servers (e.g., `"en"`, `"fr"`).
+   *
+   * @defaultValue `"en"`
+   */
   ocrLanguage: string | string[];
+
+  /**
+   * Whether to run OCR on pages with little or no native text.
+   * When enabled, LiteParse selectively OCRs only images and text-sparse regions.
+   *
+   * @defaultValue `true`
+   */
   ocrEnabled: boolean;
 
-  // HTTP OCR Server (optional - if not provided, uses Tesseract)
+  /**
+   * URL of an HTTP OCR server implementing the LiteParse OCR API.
+   * If not provided, the built-in Tesseract.js engine is used.
+   *
+   * @see {@link https://github.com/run-llama/liteparse/blob/main/OCR_API_SPEC.md | OCR API Specification}
+   */
   ocrServerUrl?: string;
 
-  // page processing concurrency (number of pages to process in parallel per document)
+  /**
+   * Number of pages to OCR in parallel. Higher values use more memory but
+   * process faster on multi-core machines.
+   *
+   * @defaultValue CPU cores - 1 (minimum 1)
+   */
   numWorkers: number;
 
-  // Processing
+  /**
+   * Maximum number of pages to parse from the document.
+   *
+   * @defaultValue `1000`
+   */
   maxPages: number;
+
+  /**
+   * Specific pages to parse, as a comma-separated string of page numbers and ranges.
+   *
+   * @example `"1-5,10,15-20"`
+   */
   targetPages?: string;
+
+  /**
+   * DPI (dots per inch) for rendering pages to images. Higher values improve
+   * OCR accuracy but increase processing time and memory usage.
+   *
+   * @defaultValue `150`
+   */
   dpi: number;
 
-  // Output
+  /**
+   * Output format for parsed results.
+   *
+   * @defaultValue `"json"`
+   */
   outputFormat: OutputFormat;
-  includeImages: boolean;
-  includeCharts: boolean;
 
-  // Features
+  /**
+   * Calculate precise bounding boxes for each text line. Disable for faster
+   * parsing when bounding boxes aren't needed.
+   *
+   * @defaultValue `true`
+   */
   preciseBoundingBox: boolean;
-  skipDiagonalText: boolean;
+
+  /**
+   * Preserve very small text that would normally be filtered out.
+   *
+   * @defaultValue `false`
+   */
   preserveVerySmallText: boolean;
+
+  /**
+   * Maintain consistent text alignment across page boundaries.
+   *
+   * @defaultValue `false`
+   */
   preserveLayoutAlignmentAcrossPages: boolean;
 }
 
+/**
+ * An individual text element extracted from a page, with position, size, and font metadata.
+ *
+ * Coordinates use the PDF coordinate system where the origin is at the top-left
+ * of the page, x increases to the right, and y increases downward.
+ */
 export interface TextItem {
+  /** The text content of this item. */
   str: string;
+  /** X coordinate of the top-left corner, in PDF points. */
   x: number;
+  /** Y coordinate of the top-left corner, in PDF points. */
   y: number;
+  /** Width of the text item in PDF points. */
   width: number;
+  /** Height of the text item in PDF points. */
   height: number;
-  w: number; // Alias for width
-  h: number; // Alias for height
+  /** Alias for {@link TextItem.width | width}. */
+  w: number;
+  /** Alias for {@link TextItem.height | height}. */
+  h: number;
+  /** Font name (e.g., `"Helvetica"`, `"Times-Roman"`, `"OCR"` for OCR-detected text). */
   fontName?: string;
+  /** Font size in PDF points. */
   fontSize?: number;
-  r?: number; // Rotation angle in degrees (0, 90, 180, 270)
-  rx?: number; // Rotated x coordinate
-  ry?: number; // Rotated y coordinate
+  /** Rotation angle in degrees. One of `0`, `90`, `180`, or `270`. */
+  r?: number;
+  /** X coordinate after rotation transformation. */
+  rx?: number;
+  /** Y coordinate after rotation transformation. */
+  ry?: number;
+  /** Markup annotations (highlights, underlines, etc.) applied to this text. */
   markup?: MarkupData;
+  /** @internal Whether this item represents a vertical gap. */
   vgap?: boolean;
+  /** @internal Whether this is a placeholder item used during layout. */
   isPlaceholder?: boolean;
 }
 
+/**
+ * Markup annotation data associated with a text item.
+ */
 export interface MarkupData {
+  /** Highlight color (e.g., `"yellow"`, `"#FFFF00"`), or `undefined` if not highlighted. */
   highlight?: string;
+  /** Whether the text is underlined. */
   underline?: boolean;
+  /** Whether the text has a squiggly underline. */
   squiggly?: boolean;
+  /** Whether the text is struck out. */
   strikeout?: boolean;
 }
 
@@ -83,6 +190,10 @@ export interface ProjectionTextBox {
   d?: number; // Delta for rotation handling
 }
 
+/**
+ * A rectangle defined by position and dimensions.
+ * @internal
+ */
 export interface Coordinates {
   x: number;
   y: number;
@@ -90,37 +201,71 @@ export interface Coordinates {
   h: number;
 }
 
+/**
+ * Raw OCR detection result before conversion to {@link TextItem}.
+ * @internal
+ */
 export interface OcrData {
   x: number;
   y: number;
   w: number;
   h: number;
+  /** Confidence score from 0.0 to 1.0. */
   confidence: number;
+  /** Recognized text. */
   text: string;
 }
 
+/**
+ * An axis-aligned bounding box defined by its top-left and bottom-right corners.
+ *
+ * All coordinates are in PDF points.
+ */
 export interface BoundingBox {
+  /** X coordinate of the top-left corner. */
   x1: number;
+  /** Y coordinate of the top-left corner. */
   y1: number;
+  /** X coordinate of the bottom-right corner. */
   x2: number;
+  /** Y coordinate of the bottom-right corner. */
   y2: number;
 }
 
+/**
+ * Parsed data for a single page of a document.
+ */
 export interface ParsedPage {
+  /** 1-indexed page number. */
   pageNum: number;
+  /** Page width in PDF points. */
   width: number;
+  /** Page height in PDF points. */
   height: number;
+  /** Full text content of the page with spatial layout preserved. */
   text: string;
+  /** Individual text elements extracted from the page. */
   textItems: TextItem[];
+  /** Bounding boxes for text lines. Present when {@link LiteParseConfig.preciseBoundingBox} is enabled. */
   boundingBoxes?: BoundingBox[];
 }
 
+/**
+ * Structured JSON representation of parsed document data.
+ * Returned when {@link LiteParseConfig.outputFormat} is `"json"`.
+ */
 export interface ParseResultJson {
+  /** Array of page data. */
   pages: Array<{
+    /** 1-indexed page number. */
     page: number;
+    /** Page width in PDF points. */
     width: number;
+    /** Page height in PDF points. */
     height: number;
+    /** Full text content of the page. */
     text: string;
+    /** Individual text elements with position and font metadata. */
     textItems: Array<{
       text: string;
       x: number;
@@ -130,20 +275,35 @@ export interface ParseResultJson {
       fontName?: string;
       fontSize?: number;
     }>;
+    /** Bounding boxes for text lines. */
     boundingBoxes: BoundingBox[];
   }>;
 }
 
+/**
+ * The result of parsing a document with {@link LiteParse.parse}.
+ */
 export interface ParseResult {
+  /** Per-page parsed data. */
   pages: ParsedPage[];
+  /** Full document text, concatenated from all pages. */
   text: string;
+  /** Structured JSON data. Present when {@link LiteParseConfig.outputFormat} is `"json"`. */
   json?: ParseResultJson;
 }
 
+/**
+ * The result of generating a screenshot with {@link LiteParse.screenshot}.
+ */
 export interface ScreenshotResult {
+  /** 1-indexed page number. */
   pageNum: number;
+  /** Image width in pixels. */
   width: number;
+  /** Image height in pixels. */
   height: number;
+  /** Raw image data as a Node.js Buffer (PNG or JPG). */
   imageBuffer: Buffer;
+  /** File path if the screenshot was saved to disk. */
   imagePath?: string;
 }

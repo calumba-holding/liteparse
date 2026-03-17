@@ -63,3 +63,8 @@ ltt/
 
 # OCR data files
 *.traineddata
+
+# Docs
+.docs-preview/
+docs/src/content/docs/liteparse/api.md
+docs/src/content/docs/liteparse/.api-tmp/
