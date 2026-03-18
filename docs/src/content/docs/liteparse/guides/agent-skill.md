@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-LiteParse can be installed as a **coding agent skill** using Vercel's [skills](https://github.com/vercel-labs/skills) utility. This gives your coding agent the ability to parse documents, generate screenshots, and extract text from files — all locally.
+LiteParse can be installed as a **coding agent skill** using Vercel's [skills](https://github.com/vercel-labs/skills) utility. This gives your coding agent the ability to process documents, generate screenshots, and parse text from files, all locally.
 
 ## Installation
 
@@ -17,7 +17,7 @@ npx skills add run-llama/llamaparse-agent-skills --skill liteparse
 
 This downloads a skill file that compatible coding agents (Claude Code, Cursor, etc.) will automatically pick up.
 
-Once configured, your agent will be able to call the LiteParse CLI commands directly from its code execution environment. This means you can have your agent parse PDFs, extract text, and generate screenshots on the fly as part of its reasoning process.
+Once configured, your agent will be able to call the LiteParse CLI commands directly from its code execution environment. This means you can have your agent parse PDFs, pull out the text, and generate screenshots on the fly as part of its reasoning process.
 
 ## Example prompts
 

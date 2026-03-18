@@ -155,7 +155,7 @@ result = parser.batch_parse(
 print(f"Parsed {result.success_count} files in {result.total_time_seconds}s")
 ```
 
-### Quick text extraction
+### Quick text parsing
 
 If you just need the text and nothing else:
 

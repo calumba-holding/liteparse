@@ -1,13 +1,13 @@
 ---
 title: What is LiteParse?
-description: Fast, local PDF parsing with spatial text extraction, OCR, and bounding boxes.
+description: Fast, local PDF parsing with spatial text parsing, OCR, and bounding boxes.
 sidebar:
   order: 0
 ---
 
-LiteParse is an open-source document parsing library that extracts text with spatial layout information and bounding boxes. It runs entirely on your machine, with no cloud dependencies, no LLMs, no API keys.
+LiteParse is an open-source document parsing library that parses text with spatial layout information and bounding boxes. It runs entirely on your machine, with no cloud dependencies, no LLMs, no API keys.
 
-LiteParse is designed specifically for use cases that require fast, accurate text extraction: real-time applications, coding agents, and local workflows. It provides a simple CLI and library API for parsing PDFs, Office documents, and images, with built-in OCR support.
+LiteParse is designed specifically for use cases that require fast, accurate text parsing: real-time applications, coding agents, and local workflows. It provides a simple CLI and library API for parsing PDFs, Office documents, and images, with built-in OCR support.
 
 ## What can LiteParse do?
 

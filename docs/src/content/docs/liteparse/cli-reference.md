@@ -42,7 +42,7 @@ lit parse [options] <file>
 ### Examples
 
 ```bash
-# Basic text extraction
+# Basic text parsing
 lit parse report.pdf
 
 # JSON output with bounding boxes
