@@ -4,13 +4,37 @@
 [![npm version](https://img.shields.io/npm/v/@llamaindex/liteparse.svg)](https://www.npmjs.com/package/@llamaindex/liteparse)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Open-source PDF parsing with spatial text parsing, no LLMs and cloud dependencies.
+LiteParse is a lightweight, open-source document parser built for developers who need fast, local extraction from clean, well-structured files. It handles common document formats — PDFs, DOCX, HTML, and more — with minimal setup and no API calls required.
+
+**LiteParse is great when:**
+- Your documents are relatively straightforward (no complex tables, mixed layouts, or scanned pages)
+- You want to run parsing locally without sending data to an external service
+- You're prototyping or building a lightweight pipeline and don't need enterprise-grade accuracy
+
+**Hitting the limits of local parsing?**
+For complex documents — dense tables, multi-column layouts, charts, handwritten text, or 
+scanned PDFs — you'll get significantly better results with [LlamaParse](https://developers.llamaindex.ai/python/cloud/llamaparse/?utm_source=github&utm_medium=liteparse), 
+our cloud-based document parser built for production RAG pipelines. LlamaParse handles the 
+hard stuff so your models see clean, structured data.
+
+>  👉 [Sign up for LlamaParse free](https://cloud.llamaindex.ai?utm_source=github&utm_medium=liteparse)
 
 ## Overview
 
 LiteParse is a standalone OSS PDF parsing tool focused exclusively on **fast and light** parsing. It provides high-quality spatial text parsing with bounding boxes, without proprietary LLM features or cloud dependencies. Everything runs locally on your machine. 
 
-### Features
+LiteParse is a standalone OSS PDF parsing tool focused exclusively on **fast and light** parsing. It provides high-quality spatial text parsing with bounding boxes, without proprietary LLM features or cloud dependencies. Everything runs locally on your machine. 
+
+**Hitting the limits of local parsing?**
+For complex documents (dense tables, multi-column layouts, charts, handwritten text, or 
+scanned PDFs), you'll get significantly better results with [LlamaParse](https://developers.llamaindex.ai/python/cloud/llamaparse/?utm_source=github&utm_medium=liteparse), 
+our cloud-based document parser built for production document pipelines. LlamaParse handles the 
+hard stuff so your models see clean, structured data and markdown.
+
+>  👉 [Sign up for LlamaParse free](https://cloud.llamaindex.ai?utm_source=github&utm_medium=liteparse)
+
+## Overview
+
 
 - **Fast Text Parsing**: Spatial text parsing using PDF.js
 - **Flexible OCR System**:
