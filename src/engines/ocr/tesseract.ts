@@ -7,9 +7,12 @@ export class TesseractEngine implements OcrEngine {
   private workers: Worker[] = [];
   private currentLanguage?: string;
   private concurrency: number;
+  private tessdataPath?: string;
 
-  constructor(concurrency: number = 4) {
+  constructor(concurrency: number = 4, tessdataPath?: string) {
     this.concurrency = concurrency;
+    // Use explicit path, then TESSDATA_PREFIX env var, then let tesseract.js default (CDN)
+    this.tessdataPath = tessdataPath || process.env.TESSDATA_PREFIX || undefined;
   }
 
   async initialize(language: string = "eng"): Promise<void> {
@@ -23,10 +26,65 @@ export class TesseractEngine implements OcrEngine {
     // Create scheduler
     this.scheduler = createScheduler();
 
+    // Build worker options for local tessdata support
+    const workerOptions: Record<string, unknown> = {};
+    if (this.tessdataPath) {
+      workerOptions.langPath = this.tessdataPath;
+      workerOptions.cachePath = this.tessdataPath;
+      workerOptions.gzip = false; // Pre-cached files are not gzipped
+    }
+
     // Create worker pool
     for (let i = 0; i < this.concurrency; i++) {
-      const worker = await createWorker(language, 1);
+      let worker: Worker;
+      try {
+        worker = await createWorker(
+          language,
+          1,
+          Object.keys(workerOptions).length > 0 ? workerOptions : undefined
+        );
+      } catch (error) {
+        // Clean up any workers already created
+        await this.terminate();
+        const message = error instanceof Error ? error.message : String(error);
+
+        // Provide actionable guidance for common failures
+        if (
+          message.includes("fetch") ||
+          message.includes("network") ||
+          message.includes("ENOTFOUND") ||
+          message.includes("ERR_INVALID_URL")
+        ) {
+          throw new Error(
+            `Tesseract failed to download language data for "${language}". ` +
+              `This usually means the machine has no internet access. ` +
+              `To fix this, either:\n` +
+              `  1. Set the TESSDATA_PREFIX env var to a directory containing ${language}.traineddata\n` +
+              `  2. Use --ocr-server-url to use an external OCR server instead\n` +
+              `  3. Use --no-ocr to disable OCR entirely`,
+            {
+              cause: error,
+            }
+          );
+        }
+        if (
+          message.includes("traineddata") ||
+          message.includes("TESSDATA") ||
+          message.includes("loading language")
+        ) {
+          throw new Error(
+            `Tesseract failed to load language data for "${language}": ${message}\n` +
+              `Ensure ${language}.traineddata exists in your tessdata directory and set ` +
+              `the TESSDATA_PREFIX env var accordingly.`,
+            {
+              cause: error,
+            }
+          );
+        }
+        throw new Error(`Tesseract OCR initialization failed: ${message}`, { cause: error });
+      }
       if (!worker) {
+        await this.terminate();
         throw new Error("Tesseract worker not initialized");
       }
       this.workers.push(worker);

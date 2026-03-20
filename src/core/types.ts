@@ -48,6 +48,17 @@ export interface LiteParseConfig {
   ocrServerUrl?: string;
 
   /**
+   * Path to a directory containing Tesseract `.traineddata` files.
+   * Used as both the language data source and cache directory for Tesseract.js.
+   *
+   * If not set, falls back to the `TESSDATA_PREFIX` environment variable.
+   * If neither is set, Tesseract.js downloads data from cdn.jsdelivr.net.
+   *
+   * @example `/opt/tessdata`
+   */
+  tessdataPath?: string;
+
+  /**
    * Number of pages to OCR in parallel. Higher values use more memory but
    * process faster on multi-core machines.
    *

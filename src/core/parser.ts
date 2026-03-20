@@ -67,7 +67,7 @@ export class LiteParse {
       if (this.config.ocrServerUrl) {
         this.ocrEngine = new HttpOcrEngine(this.config.ocrServerUrl);
       } else {
-        this.ocrEngine = new TesseractEngine(this.config.numWorkers);
+        this.ocrEngine = new TesseractEngine(this.config.numWorkers, this.config.tessdataPath);
       }
     }
   }
