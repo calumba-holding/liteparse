@@ -27,9 +27,8 @@ export class PdfiumRenderer {
     }
 
     // Accept file path or raw bytes
-    const pdfBuffer = typeof pdfInput === "string"
-      ? await fs.readFile(pdfInput)
-      : Buffer.from(pdfInput);
+    const pdfBuffer =
+      typeof pdfInput === "string" ? await fs.readFile(pdfInput) : Buffer.from(pdfInput);
 
     // Load document
     const document = await this.pdfium.loadDocument(pdfBuffer);

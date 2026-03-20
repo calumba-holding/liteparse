@@ -1,3 +1,4 @@
+import os from "os";
 import { vi, describe, it, expect, afterEach } from "vitest";
 import { EventEmitter } from "events";
 
@@ -6,10 +7,22 @@ vi.mock("file-type", () => ({
   fileTypeFromFile: (...args: unknown[]) => mockFileTypeFromFile(...args),
   fileTypeFromBuffer: vi.fn(async (data: Buffer | Uint8Array) => {
     // Replicate enough detection to validate the wrapper
-    if (data.length >= 4 && data[0] === 0x25 && data[1] === 0x50 && data[2] === 0x44 && data[3] === 0x46) {
+    if (
+      data.length >= 4 &&
+      data[0] === 0x25 &&
+      data[1] === 0x50 &&
+      data[2] === 0x44 &&
+      data[3] === 0x46
+    ) {
       return { ext: "pdf", mime: "application/pdf" };
     }
-    if (data.length >= 8 && data[0] === 0x89 && data[1] === 0x50 && data[2] === 0x4e && data[3] === 0x47) {
+    if (
+      data.length >= 8 &&
+      data[0] === 0x89 &&
+      data[1] === 0x50 &&
+      data[2] === 0x4e &&
+      data[3] === 0x47
+    ) {
       return { ext: "png", mime: "image/png" };
     }
     if (data.length >= 3 && data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff) {
@@ -316,7 +329,6 @@ describe("test getTmpDir", () => {
 
   it("falls back to os.tmpdir() when LITEPARSE_TMPDIR is not set", () => {
     delete process.env.LITEPARSE_TMPDIR;
-    const os = require("os");
     expect(getTmpDir()).toBe(os.tmpdir());
   });
 });

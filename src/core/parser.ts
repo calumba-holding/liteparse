@@ -1,5 +1,11 @@
 import pLimit from "p-limit";
-import { LiteParseConfig, LiteParseInput, ParseResult, ScreenshotResult, TextItem } from "./types.js";
+import {
+  LiteParseConfig,
+  LiteParseInput,
+  ParseResult,
+  ScreenshotResult,
+  TextItem,
+} from "./types.js";
 import { mergeConfig } from "./config.js";
 import { PdfEngine, PdfDocument, PageData } from "../engines/pdf/interface.js";
 import { PdfJsEngine } from "../engines/pdf/pdfjs.js";
@@ -250,7 +256,11 @@ export class LiteParse {
         }
 
         log(`Rendering page ${pageNum}...`);
-        const imageBuffer = await renderer.renderPageToBuffer(rendererInput, pageNum, this.config.dpi);
+        const imageBuffer = await renderer.renderPageToBuffer(
+          rendererInput,
+          pageNum,
+          this.config.dpi
+        );
 
         // Get page dimensions
         const pageData = await this.pdfEngine.extractPage(doc, pageNum);
