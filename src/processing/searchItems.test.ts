@@ -17,11 +17,7 @@ describe("searchItems", () => {
   });
 
   it("matches a phrase spanning multiple items", () => {
-    const items = [
-      item("0°C", 10, 50, 30),
-      item("to", 45, 50, 15),
-      item("70°C", 65, 50, 35),
-    ];
+    const items = [item("0°C", 10, 50, 30), item("to", 45, 50, 15), item("70°C", 65, 50, 35)];
     const results = searchItems(items, { phrase: "0°C to 70°C" });
     expect(results).toHaveLength(1);
     expect(results[0].text).toBe("0°C to 70°C");
@@ -30,10 +26,7 @@ describe("searchItems", () => {
   });
 
   it("narrows match and does not include unrelated leading items", () => {
-    const items = [
-      item("Operating", 10, 50, 70),
-      item("0°C to 70°C", 85, 50, 90),
-    ];
+    const items = [item("Operating", 10, 50, 70), item("0°C to 70°C", 85, 50, 90)];
     const results = searchItems(items, { phrase: "0°C to 70°C" });
     expect(results).toHaveLength(1);
     expect(results[0].x).toBe(85);
@@ -61,10 +54,7 @@ describe("searchItems", () => {
   });
 
   it("merges bounding boxes vertically for wrapped phrases", () => {
-    const items = [
-      item("temperature", 10, 50, 80, 12),
-      item("range", 10, 65, 40, 12),
-    ];
+    const items = [item("temperature", 10, 50, 80, 12), item("range", 10, 65, 40, 12)];
     const results = searchItems(items, { phrase: "temperature range" });
     expect(results).toHaveLength(1);
     expect(results[0].y).toBe(50);

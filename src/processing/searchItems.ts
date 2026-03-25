@@ -23,10 +23,7 @@ import { JsonTextItem, SearchItemsOptions } from "../core/types.js";
  * }
  * ```
  */
-export function searchItems(
-  items: JsonTextItem[],
-  options: SearchItemsOptions
-): JsonTextItem[] {
+export function searchItems(items: JsonTextItem[], options: SearchItemsOptions): JsonTextItem[] {
   const results: JsonTextItem[] = [];
   const caseSensitive = options.caseSensitive ?? false;
   const normalize = caseSensitive ? (s: string) => s : (s: string) => s.toLowerCase();
