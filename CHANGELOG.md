@@ -1,5 +1,11 @@
 # @llamaindex/liteparse
 
+## 1.3.1
+
+### Patch Changes
+
+- [#70](https://github.com/run-llama/liteparse/pull/70) [`243dc05`](https://github.com/run-llama/liteparse/commit/243dc0556769a59cf59e6565a5657b7d2630fc97) Thanks [@saravananravi08](https://github.com/saravananravi08)! - fix: resolve standard font loading failure in Node.js
+
 ## 1.3.0
 
 ### Minor Changes
