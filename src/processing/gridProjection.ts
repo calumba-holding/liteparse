@@ -870,6 +870,8 @@ export function bboxToLine(
   lines.sort((a, b) => a[0].y - b[0].y);
 
   // merge 'words'
+  const mergeThreshold = 1;
+
   // Pattern to detect standalone numeric values (financial table numbers)
   // Matches: numbers with optional commas, decimal points, dollar signs, percentages, negatives
   const numericPattern = /^[$]?-?[\d,]+\.?\d*%?$/;
@@ -893,11 +895,13 @@ export function bboxToLine(
         const bothAreNumbers =
           looksLikeTableNumber(previousLine.str) && looksLikeTableNumber(currentLine.str);
 
-        // Font-aware merge threshold: only merge without space for truly adjacent
-        // glyph fragments (kerning, character-level splits). Scale with font size
-        // to avoid fusing separate words like "of" + "our" → "ofour"
-        const mergeThreshold = Math.min(previousLine.h * 0.1, 0.8);
-        if (!bothAreNumbers && currentLine.x - previousLine.x - previousLine.w <= mergeThreshold) {
+        // Check gap with BOTH rounded width (used elsewhere) and raw width from pageBbox.
+        // Only merge without space if both agree the gap is small enough. This prevents
+        // rounding artifacts from causing word fusions (e.g., "of" + "our" → "ofour"
+        // when Math.round(w) reduces the gap from 1.34 to 1.0)
+        const roundedGap = currentLine.x - previousLine.x - previousLine.w;
+        const rawGap = currentLine.x - previousLine.x - (previousLine.pageBbox?.w ?? previousLine.w);
+        if (!bothAreNumbers && roundedGap <= mergeThreshold && rawGap <= mergeThreshold) {
           // if same word but less than .7 of prev line
           if (currentLine.h != 0 && currentLine.h < previousLine.h * 0.7) {
             // and not starting with space
