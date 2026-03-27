@@ -1,5 +1,11 @@
 # @llamaindex/liteparse
 
+## 1.3.2
+
+### Patch Changes
+
+- [#55](https://github.com/run-llama/liteparse/pull/55) [`b57cb61`](https://github.com/run-llama/liteparse/commit/b57cb61de9371cbc1cf91f01aafc7e1fe912e520) Thanks [@hexapode](https://github.com/hexapode)! - Improve text projection on justified text
+
 ## 1.3.1
 
 ### Patch Changes
