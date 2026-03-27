@@ -900,7 +900,8 @@ export function bboxToLine(
         // rounding artifacts from causing word fusions (e.g., "of" + "our" → "ofour"
         // when Math.round(w) reduces the gap from 1.34 to 1.0)
         const roundedGap = currentLine.x - previousLine.x - previousLine.w;
-        const rawGap = currentLine.x - previousLine.x - (previousLine.pageBbox?.w ?? previousLine.w);
+        const rawGap =
+          currentLine.x - previousLine.x - (previousLine.pageBbox?.w ?? previousLine.w);
         if (!bothAreNumbers && roundedGap <= mergeThreshold && rawGap <= mergeThreshold) {
           // if same word but less than .7 of prev line
           if (currentLine.h != 0 && currentLine.h < previousLine.h * 0.7) {
