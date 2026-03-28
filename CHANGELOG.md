@@ -1,5 +1,13 @@
 # @llamaindex/liteparse
 
+## 1.4.1
+
+### Patch Changes
+
+- [#84](https://github.com/run-llama/liteparse/pull/84) [`53e02df`](https://github.com/run-llama/liteparse/commit/53e02dff71d8f83cb2539b3a856889a5c3a38b52) Thanks [@AdemBoukhris457](https://github.com/AdemBoukhris457)! - Ensure parse cleans up temp files
+
+- [#86](https://github.com/run-llama/liteparse/pull/86) [`48d86f1`](https://github.com/run-llama/liteparse/commit/48d86f1f2a0fc9d0cad29d3d30476f5cd0844d85) Thanks [@AdemBoukhris457](https://github.com/AdemBoukhris457)! - Ensure screenshot converts formats when possible
+
 ## 1.4.0
 
 ### Minor Changes
