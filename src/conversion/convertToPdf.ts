@@ -26,6 +26,12 @@ export interface ConversionPassthrough {
   content: string;
 }
 
+interface ResolvedCommand {
+  command: string;
+  args: string[];
+  resolvedPath: string;
+}
+
 // File extension categories
 export const officeExtensions = [
   ".doc",
@@ -139,6 +145,39 @@ async function executePowerShell(command: string, timeoutMs = 60000) {
   return executeCommand("powershell", ["-NoProfile", "-Command", command], timeoutMs);
 }
 
+function getResolvedPathFromOutput(output: string, useLastLine = false): string | null {
+  const lines = output
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length === 0) {
+    return null;
+  }
+
+  return useLastLine ? lines.at(-1) || null : lines[0];
+}
+
+/**
+ * Resolve the actual executable path for a command.
+ */
+async function resolveCommandPath(command: string): Promise<string | null> {
+  try {
+    if (process.platform === "win32") {
+      const output = await executePowerShell(
+        `(Get-Command '${command}' -ErrorAction Stop).Source`,
+        5000
+      );
+      return getResolvedPathFromOutput(output, true);
+    }
+
+    const output = await executeCommand("which", [command], 5000);
+    return getResolvedPathFromOutput(output);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Check if a command is available
  */
@@ -170,6 +209,46 @@ async function isPathExecutable(filePath: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+function isWindowsSystemConvert(filePath: string): boolean {
+  const normalizedPath = path.win32.normalize(filePath).toLowerCase();
+  const system32Convert = path.win32
+    .normalize(path.join(process.env.SystemRoot || "C:\\Windows", "System32", "convert.exe"))
+    .toLowerCase();
+  return normalizedPath === system32Convert;
+}
+
+async function isImageMagickBinary(executablePath: string, args: string[] = []): Promise<boolean> {
+  try {
+    const output = await executeCommand(executablePath, [...args, "-version"], 5000);
+    return output.toLowerCase().includes("imagemagick");
+  } catch {
+    return false;
+  }
+}
+
+async function resolveImageMagickCommand(
+  command: "magick" | "convert"
+): Promise<ResolvedCommand | null> {
+  const resolvedPath = await resolveCommandPath(command);
+  if (!resolvedPath) {
+    return null;
+  }
+
+  if (
+    command === "convert" &&
+    process.platform === "win32" &&
+    isWindowsSystemConvert(resolvedPath)
+  ) {
+    return null;
+  }
+
+  if (!(await isImageMagickBinary(resolvedPath))) {
+    return null;
+  }
+
+  return { command: resolvedPath, args: [], resolvedPath };
 }
 
 /**
@@ -215,21 +294,10 @@ export async function findLibreOfficeCommand(): Promise<string | null> {
 /**
  * Find ImageMagick command - handles v6 (convert) and v7 (magick)
  */
-export async function findImageMagickCommand(): Promise<{
-  command: string;
-  args: string[];
-} | null> {
-  // ImageMagick v7 uses 'magick' command
-  if ((await isCommandAvailable("magick")) || (await isCommandAvailableWindows("magick"))) {
-    return { command: "magick", args: [] };
-  }
-
-  // ImageMagick v6 uses 'convert' command
-  if ((await isCommandAvailable("convert")) || (await isCommandAvailableWindows("convert"))) {
-    return { command: "convert", args: [] };
-  }
-
-  return null;
+export async function findImageMagickCommand(): Promise<ResolvedCommand | null> {
+  return (
+    (await resolveImageMagickCommand("magick")) ?? (await resolveImageMagickCommand("convert"))
+  );
 }
 
 /**
