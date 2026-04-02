@@ -333,36 +333,147 @@ const LIGATURE_CANDIDATES = ["fi", "fl", "ff", "ffi", "ffl"] as const;
 const LIGATURE_FRAGMENTS: Record<string, string[]> = {
   fi: [
     // Common fi words/stems
-    "defin", "specif", "first", "final", "field", "file", "find", "five",
-    "fix", "fire", "firm", "fish", "fit", "figur", "ficti", "fine", "fill",
-    "filt", "fing", "finis", "benef", "certif", "classif", "confir",
-    "identif", "modif", "notif", "qualif", "satisf", "signif", "verif",
-    "financ", "fiscal", "fiber", "fidel", "filib", "fifty",
-    "profi", "magni", "manif", "paci", "sacri", "artif", "scienti",
-    "justi", "ratif", "ampli", "clari", "digni", "edif", "exempl",
-    "falsi", "forti", "glori", "horri", "intens", "purif", "simpli",
-    "speci", "terri", "unifi", "vivifi",
+    "defin",
+    "specif",
+    "first",
+    "final",
+    "field",
+    "file",
+    "find",
+    "five",
+    "fix",
+    "fire",
+    "firm",
+    "fish",
+    "fit",
+    "figur",
+    "ficti",
+    "fine",
+    "fill",
+    "filt",
+    "fing",
+    "finis",
+    "benef",
+    "certif",
+    "classif",
+    "confir",
+    "identif",
+    "modif",
+    "notif",
+    "qualif",
+    "satisf",
+    "signif",
+    "verif",
+    "financ",
+    "fiscal",
+    "fiber",
+    "fidel",
+    "filib",
+    "fifty",
+    "profi",
+    "magni",
+    "manif",
+    "paci",
+    "sacri",
+    "artif",
+    "scienti",
+    "justi",
+    "ratif",
+    "ampli",
+    "clari",
+    "digni",
+    "edif",
+    "exempl",
+    "falsi",
+    "forti",
+    "glori",
+    "horri",
+    "intens",
+    "purif",
+    "simpli",
+    "speci",
+    "terri",
+    "unifi",
+    "vivifi",
   ],
   fl: [
-    "floor", "flag", "flat", "flip", "flow", "fly", "flock", "float",
-    "fled", "flesh", "flex", "flaw", "flame", "flash", "flu",
-    "reflect", "influe", "confli", "inflat", "inflam", "afflict",
-    "profli", "overfl", "influ",
+    "floor",
+    "flag",
+    "flat",
+    "flip",
+    "flow",
+    "fly",
+    "flock",
+    "float",
+    "fled",
+    "flesh",
+    "flex",
+    "flaw",
+    "flame",
+    "flash",
+    "flu",
+    "reflect",
+    "influe",
+    "confli",
+    "inflat",
+    "inflam",
+    "afflict",
+    "profli",
+    "overfl",
+    "influ",
   ],
   ff: [
-    "affect", "afford", "differ", "effect", "offer", "buffer", "suffer",
-    "staff", "stuff", "cliff", "bluff", "affair", "offend", "offset",
-    "coffee", "toffee", "offsp", "daffod", "scaffo",
-    "effort", "offic", // Note: "offic" could also match ffi, but "ff"+"ic" is valid
+    "affect",
+    "afford",
+    "differ",
+    "effect",
+    "offer",
+    "buffer",
+    "suffer",
+    "staff",
+    "stuff",
+    "cliff",
+    "bluff",
+    "affair",
+    "offend",
+    "offset",
+    "coffee",
+    "toffee",
+    "offsp",
+    "daffod",
+    "scaffo",
+    "effort",
+    "offic", // Note: "offic" could also match ffi, but "ff"+"ic" is valid
   ],
   ffi: [
-    "offici", "effici", "traffi", "suffici", "affili", "affida",
-    "graffi", "coffin", "muffin", "puffin", "affini", "affix",
-    "suffix", "daffil",
+    "offici",
+    "effici",
+    "traffi",
+    "suffici",
+    "affili",
+    "affida",
+    "graffi",
+    "coffin",
+    "muffin",
+    "puffin",
+    "affini",
+    "affix",
+    "suffix",
+    "daffil",
   ],
   ffl: [
-    "baffle", "raffle", "shuffle", "waffle", "scaffol", "ruffle",
-    "muffle", "sniffle", "piffle", "riffle", "duffle", "truffle",
+    "baffle",
+    "raffle",
+    "shuffle",
+    "waffle",
+    "scaffol",
+    "ruffle",
+    "muffle",
+    "sniffle",
+    "piffle",
+    "riffle",
+    "duffle",
+    "truffle",
   ],
 };
 
@@ -538,10 +649,10 @@ const WINDOWS_1252_TO_UNICODE: Record<number, string> = {
   0x87: "\u2021", // ‡
   0x88: "\u02C6", // ˆ
   0x89: "\u2030", // ‰
-  0x8A: "\u0160", // Š
-  0x8B: "\u2039", // ‹
-  0x8C: "\u0152", // Œ
-  0x8E: "\u017D", // Ž
+  0x8a: "\u0160", // Š
+  0x8b: "\u2039", // ‹
+  0x8c: "\u0152", // Œ
+  0x8e: "\u017D", // Ž
   0x91: "\u2018", // '
   0x92: "\u2019", // ' (right single quote / apostrophe)
   0x93: "\u201C", // "
@@ -551,11 +662,11 @@ const WINDOWS_1252_TO_UNICODE: Record<number, string> = {
   0x97: "\u2014", // —
   0x98: "\u02DC", // ˜
   0x99: "\u2122", // ™
-  0x9A: "\u0161", // š
-  0x9B: "\u203A", // ›
-  0x9C: "\u0153", // œ
-  0x9E: "\u017E", // ž
-  0x9F: "\u0178", // Ÿ
+  0x9a: "\u0161", // š
+  0x9b: "\u203A", // ›
+  0x9c: "\u0153", // œ
+  0x9e: "\u017E", // ž
+  0x9f: "\u0178", // Ÿ
 };
 
 /**
@@ -803,7 +914,11 @@ export class PdfJsEngine implements PdfEngine {
     } as PdfJsExtendedDocument;
   }
 
-  async extractPage(doc: PdfDocument, pageNum: number, options?: ExtractOptions): Promise<PageData> {
+  async extractPage(
+    doc: PdfDocument,
+    pageNum: number,
+    options?: ExtractOptions
+  ): Promise<PageData> {
     const pdfDocument = (doc as PdfJsExtendedDocument)._pdfDocument;
     const page = await pdfDocument.getPage(pageNum);
 
@@ -890,7 +1005,9 @@ export class PdfJsEngine implements PdfEngine {
     // then rebuild the mapping using ALL accumulated contexts across all pages seen so far.
     if (buggyFontItems.length > 0) {
       accumulateLigatureContexts(buggyFontItems, this.ligatureContextAccumulator);
-      this.resolvedLigatureMap = buildControlCharMappingFromContexts(this.ligatureContextAccumulator);
+      this.resolvedLigatureMap = buildControlCharMappingFromContexts(
+        this.ligatureContextAccumulator
+      );
     }
     const controlCharMap = this.resolvedLigatureMap;
 
@@ -991,10 +1108,7 @@ export class PdfJsEngine implements PdfEngine {
    * before doing full extraction. This is a lightweight pass that only reads
    * text content — no image extraction, OCR, or coordinate transforms.
    */
-  private async prescanForLigatures(
-    doc: PdfDocument,
-    pageNumbers: number[]
-  ): Promise<void> {
+  private async prescanForLigatures(doc: PdfDocument, pageNumbers: number[]): Promise<void> {
     const pdfDocument = (doc as PdfJsExtendedDocument)._pdfDocument;
     // Sample up to 20 pages spread evenly across the document
     const sampleSize = Math.min(pageNumbers.length, 20);
