@@ -31572,7 +31572,8 @@ class PartialEvaluator {
         }
         saveLastChar(glyphUnicode);
         if (fontIsBuggy) {
-          textChunk.str.push(`:->|>_${glyph.originalCharCode}_${glyph.fontChar.charCodeAt(0) || glyph.unicode.charCodeAt(0) || 0}_<|<-:`);
+          const _glyphName = font.differences?.[glyph.originalCharCode] || font.defaultEncoding?.[glyph.originalCharCode] || '';
+          textChunk.str.push(`:->|>_${glyph.originalCharCode}_${glyph.fontChar.charCodeAt(0) || glyph.unicode.charCodeAt(0) || 0}@${_glyphName}@<|<-:`);
         } else {
           textChunk.str.push(glyphUnicode);
         }
