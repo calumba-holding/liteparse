@@ -107,7 +107,13 @@ const PIPE_PATTERN_REGEX = /\s*\|([^|])\|\s*/g;
  * original char code AND the glyph name from the font's /Differences or /Encoding
  * dictionary. This map resolves those glyph names to correct Unicode characters.
  *
- * Values sourced from the getGlyphsUnicode table in pdf.worker.mjs (Adobe Glyph List).
+ * This is a ~200-entry subset of the full Adobe Glyph List (~4,300 entries).
+ * The full canonical source is: https://github.com/adobe-type-tools/agl-aglfn
+ * (see glyphlist.txt). Our subset covers basic Latin, digits, ligatures, punctuation,
+ * typographic characters, Greek, math symbols, and common accented Latin. Glyph names
+ * not in this subset fall through to the uniXXXX convention and ASCII-range fallbacks
+ * in resolveGlyphName(). Add entries here if a PDF's buggy font uses a standard glyph
+ * name that isn't covered and doesn't match those fallbacks.
  */
 const ADOBE_GLYPH_MAP: Record<string, string> = {
   // Basic Latin letters
