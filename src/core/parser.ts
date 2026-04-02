@@ -162,7 +162,8 @@ export class LiteParse {
       const pages = await this.pdfEngine.extractAllPages(
         doc,
         this.config.maxPages,
-        this.config.targetPages
+        this.config.targetPages,
+        { extractImages: this.config.ocrEnabled }
       );
 
       // run BEFORE grid projection
@@ -310,7 +311,7 @@ export class LiteParse {
         log(`Rendering page ${pageNum}...`);
         const imageBuffer = await renderer.renderPageToBuffer(pdfInput, pageNum, this.config.dpi);
 
-        const pageData = await this.pdfEngine.extractPage(doc, pageNum);
+        const pageData = await this.pdfEngine.extractPage(doc, pageNum, { extractImages: false });
 
         results.push({
           pageNum,

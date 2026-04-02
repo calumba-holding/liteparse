@@ -1,5 +1,13 @@
 import fs from "node:fs/promises";
-import { PdfEngine, PdfDocument, PageData, Image, Annotation, BoundingBox } from "./interface.js";
+import {
+  PdfEngine,
+  PdfDocument,
+  PageData,
+  Image,
+  Annotation,
+  BoundingBox,
+  ExtractOptions,
+} from "./interface.js";
 import { TextItem } from "../../core/types.js";
 import { PdfiumRenderer } from "./pdfium-renderer.js";
 import { importPdfJs } from "./pdfjsImporter.js";
@@ -795,7 +803,7 @@ export class PdfJsEngine implements PdfEngine {
     } as PdfJsExtendedDocument;
   }
 
-  async extractPage(doc: PdfDocument, pageNum: number): Promise<PageData> {
+  async extractPage(doc: PdfDocument, pageNum: number, options?: ExtractOptions): Promise<PageData> {
     const pdfDocument = (doc as PdfJsExtendedDocument)._pdfDocument;
     const page = await pdfDocument.getPage(pageNum);
 
@@ -942,21 +950,23 @@ export class PdfJsEngine implements PdfEngine {
     }
 
     let images: Image[] = [];
-    try {
-      const pdfInput = this.currentPdfPath || this.currentPdfData || doc.data;
-      if (!this.pdfiumRenderer) {
-        this.pdfiumRenderer = new PdfiumRenderer();
-        await this.pdfiumRenderer.loadDocument(pdfInput);
+    if (options?.extractImages !== false) {
+      try {
+        const pdfInput = this.currentPdfPath || this.currentPdfData || doc.data;
+        if (!this.pdfiumRenderer) {
+          this.pdfiumRenderer = new PdfiumRenderer();
+          await this.pdfiumRenderer.loadDocument(pdfInput);
+        }
+        const imageBounds = await this.pdfiumRenderer.extractImageBounds(pdfInput, pageNum);
+        images = imageBounds.map((bounds) => ({
+          x: bounds.x,
+          y: bounds.y,
+          width: bounds.width,
+          height: bounds.height,
+        }));
+      } catch {
+        // Image extraction is best-effort
       }
-      const imageBounds = await this.pdfiumRenderer.extractImageBounds(pdfInput, pageNum);
-      images = imageBounds.map((bounds) => ({
-        x: bounds.x,
-        y: bounds.y,
-        width: bounds.width,
-        height: bounds.height,
-      }));
-    } catch {
-      // Image extraction is best-effort
     }
 
     // Skip annotation extraction - not currently used in processing pipeline
@@ -1027,7 +1037,8 @@ export class PdfJsEngine implements PdfEngine {
   async extractAllPages(
     doc: PdfDocument,
     maxPages?: number,
-    targetPages?: string
+    targetPages?: string,
+    options?: ExtractOptions
   ): Promise<PageData[]> {
     const numPages = Math.min(doc.numPages, maxPages || doc.numPages);
 
@@ -1048,7 +1059,7 @@ export class PdfJsEngine implements PdfEngine {
       if (maxPages && pages.length >= maxPages) {
         break;
       }
-      const pageData = await this.extractPage(doc, pageNum);
+      const pageData = await this.extractPage(doc, pageNum, options);
       pages.push(pageData);
     }
 
