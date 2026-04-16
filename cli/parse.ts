@@ -6,7 +6,7 @@ import path from "path";
 import { LiteParse } from "../src/core/parser.js";
 import { LiteParseConfig, OutputFormat } from "../src/core/types.js";
 import { performance } from "perf_hooks";
-import pkg from '../package.json' with { type: "json" };
+import pkg from "../package.json" with { type: "json" };
 
 const DEFAULT_MAX_PAGES = 10000;
 const DEFAULT_DPI = 150;
