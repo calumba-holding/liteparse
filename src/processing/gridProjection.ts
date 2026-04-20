@@ -894,8 +894,14 @@ export function bboxToLine(
         // - character spacing/kerning
         // - floating-point precision issues
         // - adjacent items with slightly overlapping bounding boxes
-        // We want to detect true collisions (same text rendered twice) not adjacent text
-        if (overlapLenght > Math.max(medianWidth / 3, 5)) {
+        // We want to detect true collisions (same text rendered twice) not adjacent text.
+        // Some PDFs (e.g. scanned documents with text overlays) split lines into narrow
+        // vertical strips whose bounding boxes overlap by a few pixels. These are NOT
+        // duplicates — they contain different text fragments. True duplicates overlap by
+        // close to 100% of the item width. Use a proportional check: only treat as
+        // collision if overlap exceeds 50% of the smaller item's width.
+        const minItemWidth = Math.min(currentLineItemBbox.w, bbox.w);
+        if (overlapLenght > Math.max(medianWidth / 3, 5) && overlapLenght > minItemWidth * 0.5) {
           lineCollide = true;
           break;
         }
@@ -986,9 +992,47 @@ export function bboxToLine(
               currentLine.str = strToPostScript(currentLine.str);
             }
           }
+
+          // When items overlap (negative gap), the overlap zone often contains
+          // duplicated characters (common in strip-fragmented PDFs from scans).
+          // Detect and strip the overlapping characters to avoid doubled text.
+          // Try multiple overlap estimates (floor/ceil with both char widths) since
+          // average character width is approximate and rounding can be off by one.
+          let textToAppend = currentLine.str;
+          let lengthToAdd = currentLine.strLength;
+          if (roundedGap < 0) {
+            const prevCharWidth =
+              previousLine.strLength > 0 ? previousLine.w / previousLine.strLength : 1;
+            const currCharWidth =
+              currentLine.strLength > 0 ? currentLine.w / currentLine.strLength : 1;
+            const rawOverlap = -roundedGap;
+            // Generate candidate overlap counts from both char widths, floored and ceiled
+            const candidates = new Set([
+              Math.floor(rawOverlap / prevCharWidth),
+              Math.ceil(rawOverlap / prevCharWidth),
+              Math.floor(rawOverlap / currCharWidth),
+              Math.ceil(rawOverlap / currCharWidth),
+            ]);
+            for (const overlapChars of candidates) {
+              if (
+                overlapChars > 0 &&
+                overlapChars < currentLine.strLength &&
+                overlapChars <= previousLine.strLength
+              ) {
+                const prevEnd = previousLine.str.slice(-overlapChars).toLowerCase();
+                const currStart = currentLine.str.slice(0, overlapChars).toLowerCase();
+                if (prevEnd === currStart) {
+                  textToAppend = currentLine.str.slice(overlapChars);
+                  lengthToAdd = currentLine.strLength - overlapChars;
+                  break;
+                }
+              }
+            }
+          }
+
           previousLine.w = currentLine.x + currentLine.w - previousLine.x;
-          previousLine.str += currentLine.str;
-          previousLine.strLength += currentLine.strLength;
+          previousLine.str += textToAppend;
+          previousLine.strLength += lengthToAdd;
           previousLine.pageBbox = mergePageBbox(previousLine, currentLine);
           line.splice(i, 1);
           i--;
