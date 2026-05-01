@@ -68,7 +68,7 @@ git clone https://github.com/run-llama/liteparse.git
 cd liteparse
 npm run build
 npm pack
-npm install -g ./liteparse-*.tgz
+npm install -g ./llamaindex-liteparse-*.tgz
 ```
 
 ### Agent Skill
